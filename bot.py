@@ -152,11 +152,23 @@ def main():
         logger.error("BOT_TOKEN environment variable missing!")
         return
     
-    app = ApplicationBuilder().token(TOKEN).build()
+    # YAHAN TIMEOUTS BADHAYE GAYE HAIN (30 Seconds)
+    app = (
+        ApplicationBuilder()
+        .token(TOKEN)
+        .connect_timeout(30.0)
+        .read_timeout(30.0)
+        .write_timeout(30.0)
+        .pool_timeout(30.0)
+        .build()
+    )
+    
     app.add_handler(CommandHandler("start", start_command))
     
     logger.info("Telegram Bot started polling...")
-    app.run_polling()
+    
+    # Polling timeout bhi 30 set kiya hai taaki connection drop na ho
+    app.run_polling(timeout=30)
 
 if __name__ == "__main__":
     main()
