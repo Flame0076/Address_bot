@@ -80,38 +80,49 @@ STATES_DATA = {
 
 ROAD_NAMES = [
     "MG Road", "Station Road", "Civil Lines", "Main Market Road", "Ring Road",
-    "Subhash Chowk", "Nehru Nagar Street 4", "Gandhi Path", "Hospital Road", "Temple Street",
-    "Station Square", "University Road", "IT Park Avenue", "Industrial Area Phase 2", "Rajendra Nagar Main Road"
+    "Subhash Chowk", "Nehru Nagar Path", "Gandhi Road", "Hospital Road", "Temple Street",
+    "Station Square", "University Road", "IT Park Avenue", "Industrial Road", "Rajendra Nagar Main Road"
 ]
 
-VILLAGE_BLOCKS = [
-    "Block A, Sector 12", "Block B, Near Panchayat Ghar", "Ward No. 7", "Tehsil Road Area",
-    "Extension Zone", "Green Park Colony", "Housing Board Colony", "Shanti Niketan Enclave",
-    "Model Town Phase 1", "Industrial Growth Center", "Old City Zone", "Urban Estate Area"
+# Naye Village aur Block lists aapke format ke liye
+VILLAGES = [
+    "Rampur", "Shantipur", "Kishanpur", "Nawada", "Gopalpur", 
+    "Bhavanipur", "Madhopur", "Sitapur", "Haripur", "Kamalpur",
+    "Narayanpur", "Govindpur", "Mirzapur", "Kalyanpur", "Jagdishpur"
 ]
+
+BLOCKS = [
+    "Block A", "Block B", "Block C", "Sector 4", "Sector 9", 
+    "Phase 1", "Phase 2", "Ward No. 12", "Ward No. 5", "Block D",
+    "Ward No. 7", "Extension Phase"
+]
+
+FLOORS = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"]
 
 user_history = {}
 
 def get_random_address(user_id):
+    # Select state based on weight
     states = list(STATES_DATA.keys())
     weights = [STATES_DATA[s]["weight"] for s in states]
     
     selected_state = random.choices(states, weights=weights, k=1)[0]
     state_info = STATES_DATA[selected_state]
     
+    # Select components
     district = random.choice(state_info["districts"])
+    city = district # City aur District same rakha gaya hai realistic lagne ke liye
     road = random.choice(ROAD_NAMES)
-    block = random.choice(VILLAGE_BLOCKS)
-    
-    floor = random.choice(["Ground Floor", "1st Floor", "2nd Floor", "Independent House", "Basement Floor"])
-    door_no = f"House No. {random.randint(1, 450)}"
-    flat_no = f"Flat/Plot {random.choice(['A', 'B', 'C', 'X', 'Y'])}-{random.randint(10, 99)}"
+    village = random.choice(VILLAGES)
+    block = random.choice(BLOCKS)
+    floor = random.choice(FLOORS)
     
     pin_prefix = random.choice(state_info["pincode_prefix"])
     pincode = f"{pin_prefix}{random.randint(100, 999)}"
     
-    address_tuple = (road, floor, door_no, flat_no, block, district, selected_state, pincode)
+    address_tuple = (road, floor, village, block, city, district, selected_state, pincode)
     
+    # Duplicate check for the user's last 15 requests
     if user_id not in user_history:
         user_history[user_id] = []
         
@@ -127,19 +138,22 @@ def get_random_address(user_id):
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     addr = get_random_address(user_id)
-    road, floor, door, flat, block, district, state, pincode = addr
     
+    road, floor, village, block, city, district, state, pincode = addr
+    
+    # Naya Exact Format Jaisa Aapne Manga Hai
     response_text = (
-        f"🇮🇳 **New Indian Address Generated**\n\n"
-        f"🛣️ **Road Name:** {road}\n"
-        f"🚪 **Floor/Door/Flat:** {floor}, {door}, {flat}\n"
-        f"🏡 **Village/Block:** {block}\n"
-        f"🏙️ **City/District:** {district}\n"
-        f"🗺️ **State:** {state}\n"
-        f"📮 **Pincode:** {pincode}\n\n"
-        f"🔄 *Har baar /start dabane par ek naya aur unique address milega!*"
+        f"Road Name: {road}\n"
+        f"Floor: {floor}\n"
+        f"Village: {village}\n"
+        f"Block: {block}\n"
+        f"City: {city}\n"
+        f"District: {district}\n"
+        f"State: {state}\n"
+        f"Pincode: {pincode}"
     )
-    await update.message.reply_text(response_text, parse_mode="Markdown")
+    
+    await update.message.reply_text(response_text)
 
 def main():
     # Start Flask server in background thread so Render detects a running port
@@ -152,7 +166,7 @@ def main():
         logger.error("BOT_TOKEN environment variable missing!")
         return
     
-    # YAHAN TIMEOUTS BADHAYE GAYE HAIN (30 Seconds)
+    # Timeout 30 seconds rakha gaya hai taaki server timeout crash na ho
     app = (
         ApplicationBuilder()
         .token(TOKEN)
@@ -166,8 +180,6 @@ def main():
     app.add_handler(CommandHandler("start", start_command))
     
     logger.info("Telegram Bot started polling...")
-    
-    # Polling timeout bhi 30 set kiya hai taaki connection drop na ho
     app.run_polling(timeout=30)
 
 if __name__ == "__main__":
