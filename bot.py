@@ -27,22 +27,22 @@ def run_flask():
 # ----------------- DATASETS & WEIGHTED REGIONS -----------------
 STATES_DATA = {
     "Uttar Pradesh": {
-        "districts": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut", "Prayagraj", "Ghaziabad", "Noida", "Bareilly", "Gorakhpur"],
+        "districts": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut", "Prayagraj", "Ghaziabad", "Noida", "Bareilly", "Gorakhpur", "Aligarh", "Moradabad"],
         "weight": 25,
         "pincode_prefix": ["201", "226", "208", "221", "282", "250", "211", "243", "273"]
     },
     "Bihar": {
-        "districts": ["Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Purnia", "Darbhanga", "Ara", "Begusarai", "Katihar", "Chhapra"],
+        "districts": ["Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Purnia", "Darbhanga", "Ara", "Begusarai", "Katihar", "Chhapra", "Samastipur"],
         "weight": 20,
         "pincode_prefix": ["800", "823", "842", "812", "854", "846", "802", "851", "841"]
     },
     "Madhya Pradesh": {
-        "districts": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa"],
+        "districts": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Katni", "Singrauli"],
         "weight": 20,
         "pincode_prefix": ["462", "452", "474", "482", "456", "470", "455", "485", "457"]
     },
     "Rajasthan": {
-        "districts": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner", "Alwar", "Bhilwara", "Sikar", "Pali"],
+        "districts": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner", "Alwar", "Bhilwara", "Sikar", "Pali", "Sri Ganganagar"],
         "weight": 18,
         "pincode_prefix": ["302", "342", "313", "324", "305", "334", "301", "311", "332"]
     },
@@ -52,56 +52,54 @@ STATES_DATA = {
         "pincode_prefix": ["110"]
     },
     "Maharashtra": {
-        "districts": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Solapur", "Thane", "Kolhapur"],
+        "districts": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Solapur", "Thane", "Kolhapur", "Amravati"],
         "weight": 10,
         "pincode_prefix": ["400", "411", "440", "422", "431", "413", "421"]
     },
     "Karnataka": {
-        "districts": ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru", "Belagavi", "Davangere"],
+        "districts": ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru", "Belagavi", "Davangere", "Ballari"],
         "weight": 8,
         "pincode_prefix": ["560", "570", "580", "575", "590"]
-    },
-    "Gujarat": {
-        "districts": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar"],
-        "weight": 8,
-        "pincode_prefix": ["380", "390", "360", "364", "361"]
-    },
-    "Punjab": {
-        "districts": ["Amritsar", "Ludhiana", "Jalandhar", "Patiala", "Bathinda"],
-        "weight": 6,
-        "pincode_prefix": ["141", "143", "144", "147", "151"]
-    },
-    "Haryana": {
-        "districts": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Hisar", "Rohtak"],
-        "weight": 6,
-        "pincode_prefix": ["122", "121", "132", "133", "125", "124"]
     }
 }
 
-ROAD_NAMES = [
-    "MG Road", "Station Road", "Civil Lines", "Main Market Road", "Ring Road",
-    "Subhash Chowk", "Nehru Nagar Path", "Gandhi Road", "Hospital Road", "Temple Street",
-    "Station Square", "University Road", "IT Park Avenue", "Industrial Road", "Rajendra Nagar Main Road"
-]
+# ----------------- DYNAMIC GENERATORS (Yahan se repeat hona impossible hai) -----------------
 
-# Naye Village aur Block lists aapke format ke liye
-VILLAGES = [
-    "Rampur", "Shantipur", "Kishanpur", "Nawada", "Gopalpur", 
-    "Bhavanipur", "Madhopur", "Sitapur", "Haripur", "Kamalpur",
-    "Narayanpur", "Govindpur", "Mirzapur", "Kalyanpur", "Jagdishpur"
-]
+def get_dynamic_road():
+    roads = ["MG Road", "Station Road", "Civil Lines", "Main Market", "Ring Road", "Subhash Chowk", "Gandhi Path", "Hospital Road", "Temple Street", "University Road", "IT Park Avenue", "Industrial Road", "Rajendra Nagar", "Patel Marg", "Nehru Street", "Ambedkar Road", "Tagore Path", "Shastri Marg", "Link Road", "Bypass Road", "Mall Road"]
+    prefix = random.choice(["Street No.", "Lane No.", "Gali No.", "Road No.", "Path No."])
+    num = random.randint(1, 999) # Har baar naya number aayega (e.g., Gali No. 452)
+    return f"{prefix} {num}, {random.choice(roads)}"
 
-BLOCKS = [
-    "Block A", "Block B", "Block C", "Sector 4", "Sector 9", 
-    "Phase 1", "Phase 2", "Ward No. 12", "Ward No. 5", "Block D",
-    "Ward No. 7", "Extension Phase"
-]
+def get_dynamic_block():
+    formats = [
+        f"Sector {random.randint(1, 150)}",
+        f"Block {random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')}-{random.randint(1, 99)}",
+        f"Ward No. {random.randint(1, 200)}",
+        f"Phase {random.randint(1, 10)}",
+        f"Zone {random.choice(['North', 'South', 'East', 'West'])}"
+    ]
+    return random.choice(formats) # Har baar ek alag combination banega (e.g., Block K-72)
 
-FLOORS = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"]
+def get_dynamic_village():
+    # Hazaron alag-alag village naam combine honge automatically
+    prefixes = ["Ram", "Gopal", "Madho", "Kishan", "Shanti", "Narayan", "Govind", "Mirza", "Kalyan", "Jagdish", "Bhavani", "Sita", "Hari", "Kamal", "Lakshman", "Mohan", "Prem", "Anand", "Shiv", "Fateh", "Sultan", "Nawab", "Vijay", "Bharat", "Indira"]
+    suffixes = ["pur", "nagar", "garh", "gaon", "abad", "khera", "vihar", "kunj", "talab", "wadi"]
+    
+    generated_name = f"{random.choice(prefixes)}{random.choice(suffixes)}"
+    
+    # Thodi aur reality add karne ke liye
+    if random.random() > 0.5:
+        return f"{generated_name} Khas"
+    elif random.random() > 0.3:
+        return f"{generated_name} Khurd"
+    else:
+        return generated_name
 
-user_history = {}
+FLOORS = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor", "4th Floor", "Upper Ground Floor"]
 
-def get_random_address(user_id):
+# Ab history track karne ki zaroorat hi nahi, kyuki combination karodo mein hain
+def get_random_address():
     # Select state based on weight
     states = list(STATES_DATA.keys())
     weights = [STATES_DATA[s]["weight"] for s in states]
@@ -109,39 +107,25 @@ def get_random_address(user_id):
     selected_state = random.choices(states, weights=weights, k=1)[0]
     state_info = STATES_DATA[selected_state]
     
-    # Select components
+    # Select components dynamically
     district = random.choice(state_info["districts"])
-    city = district # City aur District same rakha gaya hai realistic lagne ke liye
-    road = random.choice(ROAD_NAMES)
-    village = random.choice(VILLAGES)
-    block = random.choice(BLOCKS)
+    city = district 
+    
+    road = get_dynamic_road()
+    village = get_dynamic_village()
+    block = get_dynamic_block()
     floor = random.choice(FLOORS)
     
     pin_prefix = random.choice(state_info["pincode_prefix"])
     pincode = f"{pin_prefix}{random.randint(100, 999)}"
     
-    address_tuple = (road, floor, village, block, city, district, selected_state, pincode)
-    
-    # Duplicate check for the user's last 15 requests
-    if user_id not in user_history:
-        user_history[user_id] = []
-        
-    if address_tuple in user_history[user_id]:
-        return get_random_address(user_id)
-        
-    user_history[user_id].append(address_tuple)
-    if len(user_history[user_id]) > 15:
-        user_history[user_id].pop(0)
-        
-    return address_tuple
+    return (road, floor, village, block, city, district, selected_state, pincode)
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    addr = get_random_address(user_id)
-    
+    addr = get_random_address()
     road, floor, village, block, city, district, state, pincode = addr
     
-    # Naya Exact Format Jaisa Aapne Manga Hai
+    # Bilkul wahi format jo aapne manga tha
     response_text = (
         f"Road Name: {road}\n"
         f"Floor: {floor}\n"
@@ -166,7 +150,7 @@ def main():
         logger.error("BOT_TOKEN environment variable missing!")
         return
     
-    # Timeout 30 seconds rakha gaya hai taaki server timeout crash na ho
+    # Timeouts set hain taaki server crash na ho
     app = (
         ApplicationBuilder()
         .token(TOKEN)
